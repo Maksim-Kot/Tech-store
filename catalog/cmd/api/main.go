@@ -20,6 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer repo.Close()
 	log.Printf("database connection pool established")
 
 	ctrl := catalog.New(repo)

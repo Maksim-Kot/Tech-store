@@ -42,6 +42,10 @@ func New(cfg config.DatabaseConfig) (*Repository, error) {
 	return &Repository{db}, nil
 }
 
+func (r *Repository) Close() error {
+	return r.DB.Close()
+}
+
 func (r *Repository) Categories(ctx context.Context) ([]*model.Category, error) {
 	query := `
 		SELECT id, name
