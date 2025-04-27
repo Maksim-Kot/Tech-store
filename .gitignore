@@ -1,0 +1,6 @@
+### BUILDS ###
+bin/
+Makefile
+
+### CONFIGURATIONS ###
+base.yaml
