@@ -33,15 +33,7 @@ func New(repo catalogRepository) *Controller {
 }
 
 func (c *Controller) Categories(ctx context.Context) ([]*model.Category, error) {
-	categories, err := c.repo.Categories(ctx)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return nil, ErrNotFound
-		}
-		return nil, err
-	}
-
-	return categories, nil
+	return c.repo.Categories(ctx)
 }
 
 func (c *Controller) ProductsByCategoryID(ctx context.Context, id int64) ([]*model.Product, error) {

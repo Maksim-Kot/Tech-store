@@ -58,7 +58,7 @@ func (r *Repository) Categories(ctx context.Context) ([]*model.Category, error) 
 	}
 	defer rows.Close()
 
-	categories := []*model.Category{}
+	categories := make([]*model.Category, 0)
 
 	for rows.Next() {
 		var category model.Category
@@ -76,10 +76,6 @@ func (r *Repository) Categories(ctx context.Context) ([]*model.Category, error) 
 
 	if err = rows.Err(); err != nil {
 		return nil, err
-	}
-
-	if len(categories) == 0 {
-		return nil, repository.ErrNotFound
 	}
 
 	return categories, nil

@@ -43,12 +43,7 @@ func (h *Handler) CategoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	categories, err := h.ctrl.Categories(ctx)
 	if err != nil {
-		switch {
-		case errors.Is(err, catalog.ErrNotFound):
-			h.notFoundResponse(w, r)
-		default:
-			h.serverErrorResponse(w, r, err)
-		}
+		h.serverErrorResponse(w, r, err)
 		return
 	}
 

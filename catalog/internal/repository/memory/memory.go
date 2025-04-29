@@ -27,12 +27,9 @@ func (r *Repository) Categories(_ context.Context) ([]*model.Category, error) {
 	r.RLock()
 	defer r.RUnlock()
 
-	var categories []*model.Category
+	categories := make([]*model.Category, 0)
 	for _, c := range r.categories {
 		categories = append(categories, c)
-	}
-	if len(categories) == 0 {
-		return nil, repository.ErrNotFound
 	}
 
 	slices.SortFunc(categories, func(a, b *model.Category) int {
