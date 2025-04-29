@@ -1,0 +1,19 @@
+{{define "title"}}Products{{end}}
+
+{{define "main"}}
+<h2>Products</h2>
+    {{if .Products}}
+        <ul>
+            {{range .Products}}
+                <li>
+                    <a href="/product/{{.ID}}">
+                        <p><strong>{{.Name}}</strong></p>
+                        <p>{{.Price | printf "%.2f BYN"}}</p>
+                    </a>
+                </li>
+            {{end}}
+        </ul>
+    {{else}}
+        <p>No products available in this category.</p>
+    {{end}}
+{{end}}
