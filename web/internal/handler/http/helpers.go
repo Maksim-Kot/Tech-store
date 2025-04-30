@@ -1,12 +1,14 @@
 package http
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
 )
@@ -57,4 +59,31 @@ func transformProductAttributes(product *model.Product) (*processedProduct, erro
 		Attributes:  processedAttributes,
 		CategoryID:  product.CategoryID,
 	}, nil
+}
+
+func (h *Handler) render(w http.ResponseWriter, status int, page string, data *templateData) {
+	ts, ok := h.templateCache[page]
+	if !ok {
+		err := fmt.Errorf("the template %s does not exist", page)
+		h.serverError(w, err)
+		return
+	}
+
+	buf := new(bytes.Buffer)
+
+	err := ts.ExecuteTemplate(buf, "base", data)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
+
+	w.WriteHeader(status)
+
+	buf.WriteTo(w)
+}
+
+func (h *Handler) newTemplateData(r *http.Request) *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
+	}
 }

@@ -5,22 +5,21 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
 )
 
 type Handler struct {
-	ctrl *web.Controller
+	ctrl          *web.Controller
+	templateCache map[string]*template.Template
 }
 
-func New(ctrl *web.Controller) *Handler {
-	return &Handler{ctrl}
-}
+func New(ctrl *web.Controller) (*Handler, error) {
+	cache, err := newTemplateCache()
+	if err != nil {
+		return nil, err
+	}
 
-type templateData struct {
-	Categories []*model.Category
-	Products   []*model.Product
-	Product    *processedProduct
+	return &Handler{ctrl, cache}, nil
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
@@ -29,22 +28,9 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/home.html",
-	}
+	data := h.newTemplateData(r)
 
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		h.serverError(w, err)
-		return
-	}
-
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		h.serverError(w, err)
-	}
+	h.render(w, http.StatusOK, "home.html", data)
 }
 
 func (h *Handler) Catalog(w http.ResponseWriter, r *http.Request) {
@@ -54,26 +40,10 @@ func (h *Handler) Catalog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/catalog.html",
-	}
+	data := h.newTemplateData(r)
+	data.Categories = categories
 
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		h.serverError(w, err)
-		return
-	}
-
-	data := &templateData{
-		Categories: categories,
-	}
-
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		h.serverError(w, err)
-	}
+	h.render(w, http.StatusOK, "catalog.html", data)
 }
 
 func (h *Handler) ProductsByCategory(w http.ResponseWriter, r *http.Request) {
@@ -94,26 +64,10 @@ func (h *Handler) ProductsByCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/category.html",
-	}
+	data := h.newTemplateData(r)
+	data.Products = products
 
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		h.serverError(w, err)
-		return
-	}
-
-	data := &templateData{
-		Products: products,
-	}
-
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		h.serverError(w, err)
-	}
+	h.render(w, http.StatusOK, "category.html", data)
 }
 
 func (h *Handler) Product(w http.ResponseWriter, r *http.Request) {
@@ -140,24 +94,8 @@ func (h *Handler) Product(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/product.html",
-	}
+	data := h.newTemplateData(r)
+	data.Product = processedProduct
 
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		h.serverError(w, err)
-		return
-	}
-
-	data := &templateData{
-		Product: processedProduct,
-	}
-
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		h.serverError(w, err)
-	}
+	h.render(w, http.StatusOK, "product.html", data)
 }
