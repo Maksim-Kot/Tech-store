@@ -2,7 +2,7 @@ package http
 
 import "net/http"
 
-func (s *Server) routes() *http.ServeMux {
+func (s *Server) routes() http.Handler {
 	router := http.NewServeMux()
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
@@ -13,5 +13,5 @@ func (s *Server) routes() *http.ServeMux {
 	router.HandleFunc("GET /category/{id}", s.handler.ProductsByCategory)
 	router.HandleFunc("GET /product/{id}", s.handler.Product)
 
-	return router
+	return s.recoverPanic(logRequest(secureHeaders(router)))
 }
