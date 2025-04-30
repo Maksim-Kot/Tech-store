@@ -42,7 +42,7 @@ func (s *Server) Serve() error {
 
 		<-quit
 
-		log.Println("shutting down server")
+		log.Println("[server] shutting down server")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -52,12 +52,12 @@ func (s *Server) Serve() error {
 			shutdownError <- err
 		}
 
-		log.Println("completing background tasks")
+		log.Println("[server] completing background tasks")
 
 		shutdownError <- nil
 	}()
 
-	log.Printf("starting %s web-auth server on %s", s.cfg.Env, srv.Addr)
+	log.Printf("[server] starting %s web-auth server on %s", s.cfg.Env, srv.Addr)
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
@@ -69,7 +69,7 @@ func (s *Server) Serve() error {
 		return err
 	}
 
-	log.Printf("stoped web-auth server on %s", srv.Addr)
+	log.Printf("[server] stoped web-auth server on %s", srv.Addr)
 
 	return nil
 }

@@ -45,7 +45,7 @@ func (g *Gateway) Catalog(ctx context.Context) ([]*model.Category, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("calling catalog service. request: GET %s", url)
+	log.Printf("[gateway] GET %s (catalog service)", url)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -72,7 +72,7 @@ func (g *Gateway) ProductsByCategoryID(ctx context.Context, id int64) ([]*model.
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("calling catalog service. request: GET %s", url)
+	log.Printf("[gateway] GET %s (catalog service)", url)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -104,7 +104,7 @@ func (g *Gateway) ProductByID(ctx context.Context, id int64) (*model.Product, er
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("calling catalog service. request: GET %s", url)
+	log.Printf("[gateway] GET %s (catalog service)", url)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
