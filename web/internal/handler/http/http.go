@@ -6,11 +6,14 @@ import (
 	"net/http"
 
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
+
+	"github.com/go-playground/form/v4"
 )
 
 type Handler struct {
 	ctrl          *web.Controller
 	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func New(ctrl *web.Controller) (*Handler, error) {
@@ -19,7 +22,7 @@ func New(ctrl *web.Controller) (*Handler, error) {
 		return nil, err
 	}
 
-	return &Handler{ctrl, cache}, nil
+	return &Handler{ctrl, cache, form.NewDecoder()}, nil
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {

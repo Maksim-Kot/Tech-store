@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
+
+	"github.com/go-playground/form/v4"
 )
 
 func (h *Handler) getID(r *http.Request) (int64, error) {
@@ -86,4 +88,24 @@ func (h *Handler) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
 	}
+}
+
+func (h *Handler) decodePostForm(r *http.Request, dst any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = h.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		var invalidDecoderError *form.InvalidDecoderError
+
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+
+		return err
+	}
+
+	return nil
 }

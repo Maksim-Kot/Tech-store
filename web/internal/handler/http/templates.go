@@ -13,6 +13,7 @@ type templateData struct {
 	Categories  []*model.Category
 	Products    []*model.Product
 	Product     *processedProduct
+	Form        any
 }
 
 func humanDate(t time.Time) string {
