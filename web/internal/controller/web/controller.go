@@ -6,9 +6,14 @@ import (
 
 	catalogmodel "github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/gateway"
+	"github.com/Maksim-Kot/Tech-store-web/internal/repository"
 )
 
-var ErrNotFound = errors.New("not found")
+var (
+	ErrNotFound           = errors.New("not found")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrDuplicateEmail     = errors.New("duplicate email")
+)
 
 type catalogGateway interface {
 	Catalog(ctx context.Context) ([]*catalogmodel.Category, error)
@@ -16,12 +21,19 @@ type catalogGateway interface {
 	ProductByID(ctx context.Context, id int64) (*catalogmodel.Product, error)
 }
 
-type Controller struct {
-	catalogGateway catalogGateway
+type userRepo interface {
+	Insert(ctx context.Context, name, email, password string) error
+	Authenticate(ctx context.Context, email, password string) (int64, error)
+	Exists(ctx context.Context, id int64) (bool, error)
 }
 
-func New(catalogGateway catalogGateway) *Controller {
-	return &Controller{catalogGateway}
+type Controller struct {
+	catalogGateway catalogGateway
+	userRepo       userRepo
+}
+
+func New(catalogGateway catalogGateway, userRepo userRepo) *Controller {
+	return &Controller{catalogGateway, userRepo}
 }
 
 func (c *Controller) Catalog(ctx context.Context) ([]*catalogmodel.Category, error) {
@@ -57,4 +69,34 @@ func (c *Controller) ProductByID(ctx context.Context, id int64) (*catalogmodel.P
 	}
 
 	return product, nil
+}
+
+func (c *Controller) InsertUser(ctx context.Context, name, email, password string) error {
+	err := c.userRepo.Insert(ctx, name, email, password)
+
+	if err != nil {
+		if errors.Is(err, repository.ErrDuplicateEmail) {
+			return ErrDuplicateEmail
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) AuthenticateUser(ctx context.Context, email, password string) (int64, error) {
+	id, err := c.userRepo.Authenticate(ctx, email, password)
+
+	if err != nil {
+		if errors.Is(err, repository.ErrInvalidCredentials) {
+			return 0, ErrInvalidCredentials
+		}
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (c *Controller) UserExists(ctx context.Context, id int64) (bool, error) {
+	return c.userRepo.Exists(ctx, id)
 }
