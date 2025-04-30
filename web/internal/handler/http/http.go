@@ -24,7 +24,7 @@ func New(ctrl *web.Controller) (*Handler, error) {
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		h.notFound(w)
+		h.NotFound(w)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Catalog(w http.ResponseWriter, r *http.Request) {
 	categories, err := h.ctrl.Catalog(r.Context())
 	if err != nil {
-		h.serverError(w, err)
+		h.ServerError(w, err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *Handler) Catalog(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ProductsByCategory(w http.ResponseWriter, r *http.Request) {
 	id, err := h.getID(r)
 	if err != nil || id < 1 {
-		h.notFound(w)
+		h.NotFound(w)
 		return
 	}
 
@@ -57,9 +57,9 @@ func (h *Handler) ProductsByCategory(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, web.ErrNotFound):
-			h.notFound(w)
+			h.NotFound(w)
 		default:
-			h.serverError(w, err)
+			h.ServerError(w, err)
 		}
 		return
 	}
@@ -73,7 +73,7 @@ func (h *Handler) ProductsByCategory(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Product(w http.ResponseWriter, r *http.Request) {
 	id, err := h.getID(r)
 	if err != nil || id < 1 {
-		h.notFound(w)
+		h.NotFound(w)
 		return
 	}
 
@@ -81,16 +81,16 @@ func (h *Handler) Product(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, web.ErrNotFound):
-			h.notFound(w)
+			h.NotFound(w)
 		default:
-			h.serverError(w, err)
+			h.ServerError(w, err)
 		}
 		return
 	}
 
 	processedProduct, err := transformProductAttributes(product)
 	if err != nil {
-		h.serverError(w, err)
+		h.ServerError(w, err)
 		return
 	}
 

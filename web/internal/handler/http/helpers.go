@@ -65,7 +65,7 @@ func (h *Handler) render(w http.ResponseWriter, status int, page string, data *t
 	ts, ok := h.templateCache[page]
 	if !ok {
 		err := fmt.Errorf("the template %s does not exist", page)
-		h.serverError(w, err)
+		h.ServerError(w, err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *Handler) render(w http.ResponseWriter, status int, page string, data *t
 
 	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
-		h.serverError(w, err)
+		h.ServerError(w, err)
 		return
 	}
 
