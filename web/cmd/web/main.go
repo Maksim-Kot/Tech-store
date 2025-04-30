@@ -19,7 +19,10 @@ func main() {
 	cataloggateway := cataloggateway.New("localhost:4001")
 
 	ctrl := web.New(cataloggateway)
-	h := httphandler.New(ctrl)
+	h, err := httphandler.New(ctrl)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	srv := httpserver.New(h, cfg.Api)
 	err = srv.Serve()
