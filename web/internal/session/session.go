@@ -17,6 +17,7 @@ type Manager interface {
 	PopString(ctx context.Context, key string) string
 	RenewToken(ctx context.Context) error
 	Remove(ctx context.Context, key string)
+	Exists(ctx context.Context, key string) bool
 	LoadAndSave(http.Handler) http.Handler
 }
 
@@ -56,6 +57,10 @@ func (m *scsManager) RenewToken(ctx context.Context) error {
 
 func (m *scsManager) Remove(ctx context.Context, key string) {
 	m.sm.Remove(ctx, key)
+}
+
+func (m *scsManager) Exists(ctx context.Context, key string) bool {
+	return m.sm.Exists(ctx, key)
 }
 
 func (m *scsManager) LoadAndSave(next http.Handler) http.Handler {
