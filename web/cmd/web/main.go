@@ -7,7 +7,9 @@ import (
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
 	cataloggateway "github.com/Maksim-Kot/Tech-store-web/internal/gateway/catalog/http"
 	httphandler "github.com/Maksim-Kot/Tech-store-web/internal/handler/http"
+	"github.com/Maksim-Kot/Tech-store-web/internal/repository/mysql"
 	httpserver "github.com/Maksim-Kot/Tech-store-web/internal/server/http"
+	"github.com/Maksim-Kot/Tech-store-web/internal/session"
 )
 
 func main() {
@@ -18,8 +20,21 @@ func main() {
 
 	cataloggateway := cataloggateway.New("localhost:4001")
 
-	ctrl := web.New(cataloggateway)
-	h, err := httphandler.New(ctrl)
+	repo, err := mysql.New(cfg.Database)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer repo.Close()
+	log.Printf("[server] database connection pool established")
+
+	sessionManager, err := session.New(repo.DB, cfg.Session)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ctrl := web.New(cataloggateway, repo)
+
+	h, err := httphandler.New(ctrl, sessionManager)
 	if err != nil {
 		log.Fatal(err)
 	}

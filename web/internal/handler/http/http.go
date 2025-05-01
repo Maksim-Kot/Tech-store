@@ -6,23 +6,30 @@ import (
 	"net/http"
 
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
+	"github.com/Maksim-Kot/Tech-store-web/internal/session"
 
 	"github.com/go-playground/form/v4"
 )
 
 type Handler struct {
-	ctrl          *web.Controller
-	templateCache map[string]*template.Template
-	formDecoder   *form.Decoder
+	ctrl           *web.Controller
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
+	SessionManager session.Manager
 }
 
-func New(ctrl *web.Controller) (*Handler, error) {
+func New(ctrl *web.Controller, sm session.Manager) (*Handler, error) {
 	cache, err := newTemplateCache()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Handler{ctrl, cache, form.NewDecoder()}, nil
+	return &Handler{
+		ctrl:           ctrl,
+		templateCache:  cache,
+		formDecoder:    form.NewDecoder(),
+		SessionManager: sm,
+	}, nil
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
