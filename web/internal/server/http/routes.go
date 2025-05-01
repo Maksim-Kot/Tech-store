@@ -19,6 +19,12 @@ func (s *Server) routes() http.Handler {
 	router.Handle("GET /category/{id}", dynamic.ThenFunc(s.handler.ProductsByCategory))
 	router.Handle("GET /product/{id}", dynamic.ThenFunc(s.handler.Product))
 
+	router.Handle("GET /user/signup", dynamic.ThenFunc(s.handler.UserSignup))
+	router.Handle("POST /user/signup", dynamic.ThenFunc(s.handler.UserSignupPost))
+	router.Handle("GET /user/login", dynamic.ThenFunc(s.handler.UserLogin))
+	router.Handle("POST /user/login", dynamic.ThenFunc(s.handler.UserLoginPost))
+	router.Handle("POST /user/logout", dynamic.ThenFunc(s.handler.UserLogoutPost))
+
 	standard := alice.New(s.recoverPanic, logRequest, secureHeaders)
 
 	return standard.Then(router)
