@@ -1,6 +1,10 @@
 package http
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 func (s *Server) routes() http.Handler {
 	router := http.NewServeMux()
@@ -13,5 +17,7 @@ func (s *Server) routes() http.Handler {
 	router.HandleFunc("GET /category/{id}", s.handler.ProductsByCategory)
 	router.HandleFunc("GET /product/{id}", s.handler.Product)
 
-	return s.recoverPanic(logRequest(secureHeaders(router)))
+	standard := alice.New(s.recoverPanic, logRequest, secureHeaders)
+
+	return standard.Then(router)
 }
