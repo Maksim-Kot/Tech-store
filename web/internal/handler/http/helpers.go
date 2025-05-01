@@ -86,8 +86,9 @@ func (h *Handler) render(w http.ResponseWriter, status int, page string, data *t
 
 func (h *Handler) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
-		CurrentYear: time.Now().Year(),
-		Flash:       h.SessionManager.PopString(r.Context(), "flash"),
+		CurrentYear:     time.Now().Year(),
+		Flash:           h.SessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: h.IsAuthenticated(r),
 	}
 }
 
@@ -109,4 +110,8 @@ func (h *Handler) decodePostForm(r *http.Request, dst any) error {
 	}
 
 	return nil
+}
+
+func (h *Handler) IsAuthenticated(r *http.Request) bool {
+	return h.SessionManager.Exists(r.Context(), "authenticatedUserID")
 }

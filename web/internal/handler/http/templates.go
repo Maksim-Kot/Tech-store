@@ -9,12 +9,13 @@ import (
 )
 
 type templateData struct {
-	CurrentYear int
-	Categories  []*model.Category
-	Products    []*model.Product
-	Product     *processedProduct
-	Form        any
-	Flash       string
+	CurrentYear     int
+	Categories      []*model.Category
+	Products        []*model.Product
+	Product         *processedProduct
+	Form            any
+	Flash           string
+	IsAuthenticated bool
 }
 
 func humanDate(t time.Time) string {
