@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"time"
@@ -12,6 +13,8 @@ import (
 )
 
 type Manager interface {
+	Put(ctx context.Context, key string, val any)
+	PopString(ctx context.Context, key string) string
 	LoadAndSave(http.Handler) http.Handler
 }
 
@@ -35,6 +38,14 @@ func New(db *sql.DB, cfg config.SessionConfig) (Manager, error) {
 	}
 
 	return &scsManager{sm}, nil
+}
+
+func (m *scsManager) Put(ctx context.Context, key string, val any) {
+	m.sm.Put(ctx, key, val)
+}
+
+func (m *scsManager) PopString(ctx context.Context, key string) string {
+	return m.sm.PopString(ctx, key)
 }
 
 func (m *scsManager) LoadAndSave(next http.Handler) http.Handler {
