@@ -15,6 +15,8 @@ import (
 type Manager interface {
 	Put(ctx context.Context, key string, val any)
 	PopString(ctx context.Context, key string) string
+	RenewToken(ctx context.Context) error
+	Remove(ctx context.Context, key string)
 	LoadAndSave(http.Handler) http.Handler
 }
 
@@ -46,6 +48,14 @@ func (m *scsManager) Put(ctx context.Context, key string, val any) {
 
 func (m *scsManager) PopString(ctx context.Context, key string) string {
 	return m.sm.PopString(ctx, key)
+}
+
+func (m *scsManager) RenewToken(ctx context.Context) error {
+	return m.sm.RenewToken(ctx)
+}
+
+func (m *scsManager) Remove(ctx context.Context, key string) {
+	m.sm.Remove(ctx, key)
 }
 
 func (m *scsManager) LoadAndSave(next http.Handler) http.Handler {
