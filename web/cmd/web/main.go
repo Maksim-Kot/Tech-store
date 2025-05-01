@@ -4,7 +4,9 @@ import (
 	"log"
 
 	"github.com/Maksim-Kot/Tech-store-web/config"
-	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
+	catalogcontroller "github.com/Maksim-Kot/Tech-store-web/internal/controller/catalog"
+	usercontroller "github.com/Maksim-Kot/Tech-store-web/internal/controller/user"
+	controller "github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
 	cataloggateway "github.com/Maksim-Kot/Tech-store-web/internal/gateway/catalog/http"
 	httphandler "github.com/Maksim-Kot/Tech-store-web/internal/handler/http"
 	"github.com/Maksim-Kot/Tech-store-web/internal/repository/mysql"
@@ -32,7 +34,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ctrl := web.New(cataloggateway, repo)
+	catalogController := catalogcontroller.New(cataloggateway)
+	userController := usercontroller.New(repo)
+
+	ctrl := controller.New(catalogController, userController)
 
 	h, err := httphandler.New(ctrl, sessionManager)
 	if err != nil {

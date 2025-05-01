@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/Maksim-Kot/Tech-store-web/internal/controller"
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
 	"github.com/Maksim-Kot/Tech-store-web/internal/session"
 
@@ -44,7 +45,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Catalog(w http.ResponseWriter, r *http.Request) {
-	categories, err := h.ctrl.Catalog(r.Context())
+	categories, err := h.ctrl.Catalog.Catalog(r.Context())
 	if err != nil {
 		h.ServerError(w, err)
 		return
@@ -63,10 +64,10 @@ func (h *Handler) ProductsByCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	products, err := h.ctrl.ProductsByCategoryID(r.Context(), id)
+	products, err := h.ctrl.Catalog.ProductsByCategoryID(r.Context(), id)
 	if err != nil {
 		switch {
-		case errors.Is(err, web.ErrNotFound):
+		case errors.Is(err, controller.ErrNotFound):
 			h.NotFound(w)
 		default:
 			h.ServerError(w, err)
@@ -87,10 +88,10 @@ func (h *Handler) Product(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := h.ctrl.ProductByID(r.Context(), id)
+	product, err := h.ctrl.Catalog.ProductByID(r.Context(), id)
 	if err != nil {
 		switch {
-		case errors.Is(err, web.ErrNotFound):
+		case errors.Is(err, controller.ErrNotFound):
 			h.NotFound(w)
 		default:
 			h.ServerError(w, err)
