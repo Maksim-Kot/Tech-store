@@ -42,3 +42,16 @@ func (s *Server) recoverPanic(next http.Handler) http.Handler {
 func (s *Server) session(next http.Handler) http.Handler {
 	return s.handler.SessionManager.LoadAndSave(next)
 }
+
+func (s *Server) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !s.handler.IsAuthenticated(r) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+
+		w.Header().Add("Cache-Control", "no-store")
+
+		next.ServeHTTP(w, r)
+	})
+}
