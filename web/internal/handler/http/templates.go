@@ -14,6 +14,7 @@ type templateData struct {
 	Products    []*model.Product
 	Product     *processedProduct
 	Form        any
+	Flash       string
 }
 
 func humanDate(t time.Time) string {
