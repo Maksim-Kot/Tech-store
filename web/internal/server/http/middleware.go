@@ -38,3 +38,7 @@ func (s *Server) recoverPanic(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (s *Server) session(next http.Handler) http.Handler {
+	return s.handler.SessionManager.LoadAndSave(next)
+}

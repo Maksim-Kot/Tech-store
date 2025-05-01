@@ -12,10 +12,12 @@ func (s *Server) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	router.HandleFunc("GET /", s.handler.Home)
-	router.HandleFunc("GET /catalog", s.handler.Catalog)
-	router.HandleFunc("GET /category/{id}", s.handler.ProductsByCategory)
-	router.HandleFunc("GET /product/{id}", s.handler.Product)
+	dynamic := alice.New(s.session)
+
+	router.Handle("GET /", dynamic.ThenFunc(s.handler.Home))
+	router.Handle("GET /catalog", dynamic.ThenFunc(s.handler.Catalog))
+	router.Handle("GET /category/{id}", dynamic.ThenFunc(s.handler.ProductsByCategory))
+	router.Handle("GET /product/{id}", dynamic.ThenFunc(s.handler.Product))
 
 	standard := alice.New(s.recoverPanic, logRequest, secureHeaders)
 
