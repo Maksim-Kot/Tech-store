@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Api      APIConfig      `yaml:"api"`
 	Database DatabaseConfig `yaml:"database"`
+	Session  SessionConfig  `yaml:"session"`
 }
 
 type APIConfig struct {
@@ -23,6 +24,10 @@ type DatabaseConfig struct {
 	MaxOpenConns int    `yaml:"maxOpenConns"`
 	MaxIdleConns int    `yaml:"maxIdleConns"`
 	MaxIdleTime  string `yaml:"maxIdleTime"`
+}
+
+type SessionConfig struct {
+	Lifetime string `yaml:"lifetime"`
 }
 
 func New(path string) (*Config, error) {
