@@ -6,18 +6,20 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
+	catalogmodel "github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
+	"github.com/Maksim-Kot/Tech-store-web/internal/model"
 	"github.com/Maksim-Kot/Tech-store-web/ui"
 )
 
 type templateData struct {
 	CurrentYear     int
-	Categories      []*model.Category
-	Products        []*model.Product
+	Categories      []*catalogmodel.Category
+	Products        []*catalogmodel.Product
 	Product         *processedProduct
 	Form            any
 	Flash           string
 	IsAuthenticated bool
+	User            *model.User
 }
 
 func humanDate(t time.Time) string {

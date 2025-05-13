@@ -240,3 +240,22 @@ func (h *Handler) UserLogoutPost(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func (h *Handler) AccountView(w http.ResponseWriter, r *http.Request) {
+	id := h.SessionManager.Get(r.Context(), "authenticatedUserID")
+
+	user, err := h.Ctrl.User.Get(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, controller.ErrNotFound) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		} else {
+			h.ServerError(w, err)
+		}
+		return
+	}
+
+	data := h.newTemplateData(r)
+	data.User = user
+
+	h.render(w, http.StatusOK, "account.html", data)
+}
