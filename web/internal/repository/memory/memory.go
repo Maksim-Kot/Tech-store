@@ -88,3 +88,16 @@ func (r *Repository) Exists(_ context.Context, id int64) (bool, error) {
 
 	return false, nil
 }
+
+func (r *Repository) Get(_ context.Context, id int64) (*model.User, error) {
+	r.RLock()
+	defer r.RUnlock()
+
+	for _, u := range r.users {
+		if u.ID == id {
+			return u, nil
+		}
+	}
+
+	return nil, repository.ErrNotFound
+}

@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller"
+	"github.com/Maksim-Kot/Tech-store-web/internal/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/repository"
 )
 
@@ -12,6 +13,7 @@ type userRepo interface {
 	Insert(ctx context.Context, name, email, password string) error
 	Authenticate(ctx context.Context, email, password string) (int64, error)
 	Exists(ctx context.Context, id int64) (bool, error)
+	Get(ctx context.Context, id int64) (*model.User, error)
 }
 
 type UserController struct {
@@ -50,4 +52,17 @@ func (c *UserController) AuthenticateUser(ctx context.Context, email, password s
 
 func (c *UserController) UserExists(ctx context.Context, id int64) (bool, error) {
 	return c.userRepo.Exists(ctx, id)
+}
+
+func (c *UserController) Get(ctx context.Context, id int64) (*model.User, error) {
+	user, err := c.userRepo.Get(ctx, id)
+
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, controller.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return user, nil
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Maksim-Kot/Tech-store-web/config"
+	"github.com/Maksim-Kot/Tech-store-web/internal/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/repository"
 
 	"github.com/go-sql-driver/mysql"
@@ -108,4 +109,25 @@ func (r *Repository) Exists(ctx context.Context, id int64) (bool, error) {
 
 	err := r.DB.QueryRowContext(ctx, query, id).Scan(&exists)
 	return exists, err
+}
+
+func (r *Repository) Get(ctx context.Context, id int64) (*model.User, error) {
+	var user model.User
+
+	query := `SELECT id, name, email, created FROM users WHERE id = ?`
+
+	err := r.DB.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Created,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, repository.ErrNotFound
+		} else {
+			return nil, err
+		}
+	}
+	return &user, nil
 }
