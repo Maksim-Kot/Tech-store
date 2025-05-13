@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
+	"github.com/Maksim-Kot/Tech-store-web/internal/contexkeys"
 
 	"github.com/go-playground/form/v4"
 )
@@ -113,5 +114,9 @@ func (h *Handler) decodePostForm(r *http.Request, dst any) error {
 }
 
 func (h *Handler) IsAuthenticated(r *http.Request) bool {
-	return h.SessionManager.Exists(r.Context(), "authenticatedUserID")
+	isAuthenticated, ok := r.Context().Value(contexkeys.IsAuthenticatedContextKey).(bool)
+	if !ok {
+		return false
+	}
+	return isAuthenticated
 }
