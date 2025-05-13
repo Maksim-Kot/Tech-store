@@ -1,9 +1,12 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/Maksim-Kot/Tech-store-web/internal/contexkeys"
 )
 
 func secureHeaders(next http.Handler) http.Handler {
@@ -51,6 +54,29 @@ func (s *Server) requireAuthentication(next http.Handler) http.Handler {
 		}
 
 		w.Header().Add("Cache-Control", "no-store")
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (s *Server) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := s.handler.SessionManager.Get(r.Context(), "authenticatedUserID")
+		if id == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		exists, err := s.handler.Ctrl.User.UserExists(r.Context(), id)
+		if err != nil {
+			s.handler.ServerError(w, err)
+			return
+		}
+
+		if exists {
+			ctx := context.WithValue(r.Context(), contexkeys.IsAuthenticatedContextKey, true)
+			r = r.WithContext(ctx)
+		}
 
 		next.ServeHTTP(w, r)
 	})
