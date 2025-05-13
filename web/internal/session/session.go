@@ -14,6 +14,7 @@ import (
 
 type Manager interface {
 	Put(ctx context.Context, key string, val any)
+	Get(ctx context.Context, key string) int64
 	PopString(ctx context.Context, key string) string
 	RenewToken(ctx context.Context) error
 	Remove(ctx context.Context, key string)
@@ -45,6 +46,10 @@ func New(db *sql.DB, cfg config.SessionConfig) (Manager, error) {
 
 func (m *scsManager) Put(ctx context.Context, key string, val any) {
 	m.sm.Put(ctx, key, val)
+}
+
+func (m *scsManager) Get(ctx context.Context, key string) int64 {
+	return m.sm.GetInt64(ctx, key)
 }
 
 func (m *scsManager) PopString(ctx context.Context, key string) string {
