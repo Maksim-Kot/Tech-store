@@ -28,6 +28,7 @@ func (s *Server) routes() http.Handler {
 
 	protected := dynamic.Append(s.requireAuthentication)
 
+	router.Handle("GET /account/view", protected.ThenFunc(s.handler.AccountView))
 	router.Handle("POST /user/logout", protected.ThenFunc(s.handler.UserLogoutPost))
 
 	standard := alice.New(s.recoverPanic, logRequest, secureHeaders)
