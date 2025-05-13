@@ -12,7 +12,7 @@ func (s *Server) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	dynamic := alice.New(s.session)
+	dynamic := alice.New(s.session, s.authenticate)
 
 	router.Handle("GET /", dynamic.ThenFunc(s.handler.Home))
 	router.Handle("GET /catalog", dynamic.ThenFunc(s.handler.Catalog))
@@ -23,7 +23,10 @@ func (s *Server) routes() http.Handler {
 	router.Handle("POST /user/signup", dynamic.ThenFunc(s.handler.UserSignupPost))
 	router.Handle("GET /user/login", dynamic.ThenFunc(s.handler.UserLogin))
 	router.Handle("POST /user/login", dynamic.ThenFunc(s.handler.UserLoginPost))
-	router.Handle("POST /user/logout", dynamic.ThenFunc(s.handler.UserLogoutPost))
+
+	protected := dynamic.Append(s.requireAuthentication)
+
+	router.Handle("POST /user/logout", protected.ThenFunc(s.handler.UserLogoutPost))
 
 	standard := alice.New(s.recoverPanic, logRequest, secureHeaders)
 
