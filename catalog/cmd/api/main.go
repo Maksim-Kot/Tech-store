@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer repo.Close()
-	log.Printf("database connection pool established")
+	log.Printf("[server] database connection pool established")
 
 	ctrl := catalog.New(repo)
 	h := httphandler.New(ctrl, cfg.Api)
