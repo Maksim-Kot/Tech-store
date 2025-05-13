@@ -14,7 +14,7 @@ import (
 )
 
 type Handler struct {
-	ctrl           *web.Controller
+	Ctrl           *web.Controller
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	SessionManager session.Manager
@@ -27,7 +27,7 @@ func New(ctrl *web.Controller, sm session.Manager) (*Handler, error) {
 	}
 
 	return &Handler{
-		ctrl:           ctrl,
+		Ctrl:           ctrl,
 		templateCache:  cache,
 		formDecoder:    form.NewDecoder(),
 		SessionManager: sm,
@@ -46,7 +46,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Catalog(w http.ResponseWriter, r *http.Request) {
-	categories, err := h.ctrl.Catalog.Catalog(r.Context())
+	categories, err := h.Ctrl.Catalog.Catalog(r.Context())
 	if err != nil {
 		h.ServerError(w, err)
 		return
@@ -65,7 +65,7 @@ func (h *Handler) ProductsByCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	products, err := h.ctrl.Catalog.ProductsByCategoryID(r.Context(), id)
+	products, err := h.Ctrl.Catalog.ProductsByCategoryID(r.Context(), id)
 	if err != nil {
 		switch {
 		case errors.Is(err, controller.ErrNotFound):
@@ -89,7 +89,7 @@ func (h *Handler) Product(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := h.ctrl.Catalog.ProductByID(r.Context(), id)
+	product, err := h.Ctrl.Catalog.ProductByID(r.Context(), id)
 	if err != nil {
 		switch {
 		case errors.Is(err, controller.ErrNotFound):
@@ -148,7 +148,7 @@ func (h *Handler) UserSignupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.ctrl.User.InsertUser(r.Context(), form.Name, form.Email, form.Password)
+	err = h.Ctrl.User.InsertUser(r.Context(), form.Name, form.Email, form.Password)
 	if err != nil {
 		switch {
 		case errors.Is(err, controller.ErrDuplicateEmail):
@@ -202,7 +202,7 @@ func (h *Handler) UserLoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.ctrl.User.AuthenticateUser(r.Context(), form.Email, form.Password)
+	id, err := h.Ctrl.User.AuthenticateUser(r.Context(), form.Email, form.Password)
 	if err != nil {
 		if errors.Is(err, controller.ErrInvalidCredentials) {
 			form.AddNonFieldError("Email or password is incorrect")
