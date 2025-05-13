@@ -3,14 +3,16 @@ package http
 import (
 	"net/http"
 
+	"github.com/Maksim-Kot/Tech-store-web/ui"
+
 	"github.com/justinas/alice"
 )
 
 func (s *Server) routes() http.Handler {
 	router := http.NewServeMux()
 
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	router.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	fileServer := http.FileServer(http.FS(ui.Files))
+	router.Handle("GET /static/*filepath", fileServer)
 
 	dynamic := alice.New(s.session, s.authenticate)
 
