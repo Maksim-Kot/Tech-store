@@ -12,7 +12,7 @@ func (s *Server) routes() http.Handler {
 	router := http.NewServeMux()
 
 	fileServer := http.FileServer(http.FS(ui.Files))
-	router.Handle("GET /static/*filepath", fileServer)
+	router.Handle("GET /static/", fileServer)
 
 	dynamic := alice.New(s.session, s.authenticate)
 
@@ -25,6 +25,8 @@ func (s *Server) routes() http.Handler {
 	router.Handle("POST /user/signup", dynamic.ThenFunc(s.handler.UserSignupPost))
 	router.Handle("GET /user/login", dynamic.ThenFunc(s.handler.UserLogin))
 	router.Handle("POST /user/login", dynamic.ThenFunc(s.handler.UserLoginPost))
+
+	router.Handle("POST /cart/add", dynamic.ThenFunc(s.handler.AddToCart))
 
 	protected := dynamic.Append(s.requireAuthentication)
 

@@ -2,9 +2,12 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
+	"github.com/Maksim-Kot/Tech-store-orders/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller"
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
 	"github.com/Maksim-Kot/Tech-store-web/internal/session"
@@ -258,4 +261,49 @@ func (h *Handler) AccountView(w http.ResponseWriter, r *http.Request) {
 	data.User = user
 
 	h.render(w, http.StatusOK, "account.html", data)
+}
+
+func (h *Handler) AddToCart(w http.ResponseWriter, r *http.Request) {
+	idStr := r.FormValue("id")
+	quantityStr := r.FormValue("quantity")
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		h.ClientError(w, http.StatusBadRequest)
+		return
+	}
+
+	quantity, err := strconv.ParseInt(quantityStr, 10, 32)
+	if err != nil {
+		h.ClientError(w, http.StatusBadRequest)
+		return
+	}
+
+	var cart model.Cart
+	cartData := h.SessionManager.Get(r.Context(), "cart")
+	if cartData != nil {
+		cart = cartData.(model.Cart)
+	}
+
+	var found bool
+	for i, item := range cart.Items {
+		if item.ItemID == id {
+			cart.Items[i].Quantity += int32(quantity)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		cart.Items = append(cart.Items, model.Item{
+			ItemID:   id,
+			Quantity: int32(quantity),
+		})
+	}
+
+	h.SessionManager.Put(r.Context(), "cart", cart)
+
+	h.SessionManager.Put(r.Context(), "flash", "Added to cart")
+
+	http.Redirect(w, r, fmt.Sprintf("/product/%s", idStr), http.StatusSeeOther)
 }
