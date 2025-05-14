@@ -3,9 +3,11 @@ package session
 import (
 	"context"
 	"database/sql"
+	"encoding/gob"
 	"net/http"
 	"time"
 
+	"github.com/Maksim-Kot/Tech-store-orders/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/config"
 
 	"github.com/alexedwards/scs/mysqlstore"
@@ -31,6 +33,10 @@ type scsManager struct {
 // If a non-nil *sql.DB is provided, it uses a MySQL-backed session store.
 // If db is nil, the session manager will use the default in-memory store.
 func New(db *sql.DB, cfg config.SessionConfig) (Manager, error) {
+	gob.Register(model.Cart{})
+	gob.Register(model.Item{})
+	gob.Register([]model.Item{})
+
 	sm := scs.New()
 	lifetime, err := time.ParseDuration(cfg.Lifetime)
 	if err != nil {
