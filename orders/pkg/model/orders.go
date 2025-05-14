@@ -15,3 +15,8 @@ type Order struct {
 	Items     []Item    `json:"items"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type Cart struct {
+	UserID int64  `json:"user_id"`
+	Items  []Item `json:"items"`
+}
