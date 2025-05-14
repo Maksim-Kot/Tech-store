@@ -242,7 +242,7 @@ func (h *Handler) UserLogoutPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AccountView(w http.ResponseWriter, r *http.Request) {
-	id := h.SessionManager.Get(r.Context(), "authenticatedUserID")
+	id := h.SessionManager.GetInt64(r.Context(), "authenticatedUserID")
 
 	user, err := h.Ctrl.User.Get(r.Context(), id)
 	if err != nil {
