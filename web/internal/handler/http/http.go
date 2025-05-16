@@ -263,6 +263,19 @@ func (h *Handler) AccountView(w http.ResponseWriter, r *http.Request) {
 	h.render(w, http.StatusOK, "account.html", data)
 }
 
+func (h *Handler) ShowCart(w http.ResponseWriter, r *http.Request) {
+	var cart model.Cart
+	cartData := h.SessionManager.Get(r.Context(), "cart")
+	if cartData != nil {
+		cart = cartData.(model.Cart)
+	}
+
+	data := h.newTemplateData(r)
+	data.Cart = &cart
+
+	h.render(w, http.StatusOK, "cart.html", data)
+}
+
 func (h *Handler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	idStr := r.FormValue("id")
 	name := r.FormValue("name")
@@ -310,4 +323,32 @@ func (h *Handler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	h.SessionManager.Put(r.Context(), "flash", "Added to cart")
 
 	http.Redirect(w, r, fmt.Sprintf("/product/%s", idStr), http.StatusSeeOther)
+}
+
+func (h *Handler) RemoveFromCart(w http.ResponseWriter, r *http.Request) {
+	id, err := h.getID(r)
+	if err != nil || id < 1 {
+		h.NotFound(w)
+		return
+	}
+
+	cartData := h.SessionManager.Get(r.Context(), "cart")
+	if cartData == nil {
+		h.SessionManager.Put(r.Context(), "flash", "Cart is empty")
+		http.Redirect(w, r, "/cart", http.StatusSeeOther)
+		return
+	}
+
+	cart := cartData.(model.Cart)
+
+	if _, exists := cart.Items[id]; exists {
+		delete(cart.Items, id)
+		h.SessionManager.Put(r.Context(), "flash", "Item removed from cart")
+	} else {
+		h.SessionManager.Put(r.Context(), "flash", "Item not found in cart")
+	}
+
+	h.SessionManager.Put(r.Context(), "cart", cart)
+
+	http.Redirect(w, r, "/cart", http.StatusSeeOther)
 }

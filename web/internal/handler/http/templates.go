@@ -20,6 +20,7 @@ type templateData struct {
 	Flash           string
 	IsAuthenticated bool
 	User            *model.User
+	Cart            *model.Cart
 }
 
 func humanDate(t time.Time) string {
