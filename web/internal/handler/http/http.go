@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Maksim-Kot/Tech-store-orders/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller"
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
+	"github.com/Maksim-Kot/Tech-store-web/internal/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/session"
 	"github.com/Maksim-Kot/Tech-store-web/internal/validator"
 
@@ -265,6 +265,7 @@ func (h *Handler) AccountView(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	idStr := r.FormValue("id")
+	name := r.FormValue("name")
 	quantityStr := r.FormValue("quantity")
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -283,22 +284,25 @@ func (h *Handler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	cartData := h.SessionManager.Get(r.Context(), "cart")
 	if cartData != nil {
 		cart = cartData.(model.Cart)
-	}
-
-	var found bool
-	for i, item := range cart.Items {
-		if item.ItemID == id {
-			cart.Items[i].Quantity += int32(quantity)
-			found = true
-			break
+		if cart.Items == nil {
+			cart.Items = make(map[int64]model.Item)
+		}
+	} else {
+		cart = model.Cart{
+			Items: make(map[int64]model.Item),
 		}
 	}
 
-	if !found {
-		cart.Items = append(cart.Items, model.Item{
-			ItemID:   id,
+	item, exists := cart.Items[id]
+	if !exists {
+		cart.Items[id] = model.Item{
+			ID:       id,
+			Name:     name,
 			Quantity: int32(quantity),
-		})
+		}
+	} else {
+		item.Quantity += int32(quantity)
+		cart.Items[id] = item
 	}
 
 	h.SessionManager.Put(r.Context(), "cart", cart)
