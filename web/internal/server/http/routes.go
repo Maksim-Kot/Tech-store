@@ -26,7 +26,9 @@ func (s *Server) routes() http.Handler {
 	router.Handle("GET /user/login", dynamic.ThenFunc(s.handler.UserLogin))
 	router.Handle("POST /user/login", dynamic.ThenFunc(s.handler.UserLoginPost))
 
+	router.Handle("GET /cart", dynamic.ThenFunc(s.handler.ShowCart))
 	router.Handle("POST /cart/add", dynamic.ThenFunc(s.handler.AddToCart))
+	router.Handle("GET /cart/remove/{id}", dynamic.ThenFunc(s.handler.RemoveFromCart))
 
 	protected := dynamic.Append(s.requireAuthentication)
 
