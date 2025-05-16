@@ -22,6 +22,7 @@
     
     <form method="post" action="/cart/add">
         <input type="hidden" name="id" value="{{.ID}}" />
+        <input type="hidden" name="name" value="{{.Name}}" />
         <label for="quantity">Quantity to Add:</label>
         <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{.Quantity}}" />
         <button type="submit">Add to Cart</button>
