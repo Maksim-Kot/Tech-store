@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Maksim-Kot/Tech-store-orders/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/config"
+	"github.com/Maksim-Kot/Tech-store-web/internal/model"
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
@@ -35,7 +35,7 @@ type scsManager struct {
 func New(db *sql.DB, cfg config.SessionConfig) (Manager, error) {
 	gob.Register(model.Cart{})
 	gob.Register(model.Item{})
-	gob.Register([]model.Item{})
+	gob.Register(map[int64]model.Item{})
 
 	sm := scs.New()
 	lifetime, err := time.ParseDuration(cfg.Lifetime)
