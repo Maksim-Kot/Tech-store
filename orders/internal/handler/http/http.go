@@ -32,7 +32,7 @@ func (h *Handler) HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := h.writeJSON(w, http.StatusOK, env, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -58,7 +58,7 @@ func (h *Handler) CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, orders.ErrNotCreated):
 			h.badRequestResponse(w, r, err)
 		default:
-			h.serverErrorResponse(w, r, err)
+			h.ServerErrorResponse(w, r, err)
 		}
 		return
 	}
@@ -69,7 +69,7 @@ func (h *Handler) CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = h.writeJSON(w, http.StatusCreated, envelope{"order": message}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -89,14 +89,14 @@ func (h *Handler) OrderByIDHandler(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, orders.ErrNotFound):
 			h.notFoundResponse(w, r)
 		default:
-			h.serverErrorResponse(w, r, err)
+			h.ServerErrorResponse(w, r, err)
 		}
 		return
 	}
 
 	err = h.writeJSON(w, http.StatusOK, envelope{"order": order}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -116,13 +116,13 @@ func (h *Handler) OrdersByUserIDHandler(w http.ResponseWriter, r *http.Request) 
 		case errors.Is(err, orders.ErrNotFound):
 			h.notFoundResponse(w, r)
 		default:
-			h.serverErrorResponse(w, r, err)
+			h.ServerErrorResponse(w, r, err)
 		}
 		return
 	}
 
 	err = h.writeJSON(w, http.StatusOK, envelope{"orders": purchases}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
