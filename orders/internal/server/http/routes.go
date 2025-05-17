@@ -1,8 +1,12 @@
 package http
 
-import "net/http"
+import (
+	"net/http"
 
-func (s *Server) routes() *http.ServeMux {
+	"github.com/justinas/alice"
+)
+
+func (s *Server) routes() http.Handler {
 	router := http.NewServeMux()
 
 	router.HandleFunc("GET /healthcheck", s.handler.HealthcheckHandler)
@@ -13,5 +17,7 @@ func (s *Server) routes() *http.ServeMux {
 	v1 := http.NewServeMux()
 	v1.Handle("/v1/", http.StripPrefix("/v1", router))
 
-	return v1
+	standard := alice.New(s.recoverPanic, logRequest)
+
+	return standard.Then(v1)
 }
