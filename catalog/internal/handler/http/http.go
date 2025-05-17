@@ -33,7 +33,7 @@ func (h *Handler) HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := h.writeJSON(w, http.StatusOK, env, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -43,13 +43,13 @@ func (h *Handler) CategoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	categories, err := h.ctrl.Categories(ctx)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 		return
 	}
 
 	err = h.writeJSON(w, http.StatusOK, envelope{"categories": categories}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -69,14 +69,14 @@ func (h *Handler) ProductsByCategoryIDHandler(w http.ResponseWriter, r *http.Req
 		case errors.Is(err, catalog.ErrNotFound):
 			h.notFoundResponse(w, r)
 		default:
-			h.serverErrorResponse(w, r, err)
+			h.ServerErrorResponse(w, r, err)
 		}
 		return
 	}
 
 	err = h.writeJSON(w, http.StatusOK, envelope{"products": products}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -96,14 +96,14 @@ func (h *Handler) ProductByIDHandler(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, catalog.ErrNotFound):
 			h.notFoundResponse(w, r)
 		default:
-			h.serverErrorResponse(w, r, err)
+			h.ServerErrorResponse(w, r, err)
 		}
 		return
 	}
 
 	err = h.writeJSON(w, http.StatusOK, envelope{"product": product}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -133,7 +133,7 @@ func (h *Handler) DecreaseProductQuantityHandler(w http.ResponseWriter, r *http.
 		case errors.Is(err, catalog.ErrEditConflict):
 			h.editConflictResponse(w, r)
 		default:
-			h.serverErrorResponse(w, r, err)
+			h.ServerErrorResponse(w, r, err)
 		}
 		return
 	}
@@ -161,7 +161,7 @@ func (h *Handler) IncreaseProductQuantityHandler(w http.ResponseWriter, r *http.
 		case errors.Is(err, catalog.ErrNotFound):
 			h.notFoundResponse(w, r)
 		default:
-			h.serverErrorResponse(w, r, err)
+			h.ServerErrorResponse(w, r, err)
 		}
 		return
 	}
@@ -187,13 +187,13 @@ func (h *Handler) PutCategoryHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = h.ctrl.PutCategory(ctx, category)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 		return
 	}
 
 	err = h.writeJSON(w, http.StatusCreated, envelope{"category": category}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }
 
@@ -229,12 +229,12 @@ func (h *Handler) PutProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = h.ctrl.PutProduct(ctx, product)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 		return
 	}
 
 	err = h.writeJSON(w, http.StatusCreated, envelope{"product": product}, nil)
 	if err != nil {
-		h.serverErrorResponse(w, r, err)
+		h.ServerErrorResponse(w, r, err)
 	}
 }

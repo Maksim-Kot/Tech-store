@@ -19,7 +19,7 @@ func (h *Handler) errorResponse(w http.ResponseWriter, r *http.Request, status i
 	}
 }
 
-func (h *Handler) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+func (h *Handler) ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	h.logError(r, err)
 	message := "the server encountered a problem and could not process your request"
 	h.errorResponse(w, r, http.StatusInternalServerError, message)
