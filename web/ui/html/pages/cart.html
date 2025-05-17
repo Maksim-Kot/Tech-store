@@ -26,9 +26,9 @@
 
         <p>&nbsp;</p>
         {{if .IsAuthenticated}}
-            <form method="post" action="/orders/create">
-                <input type='submit' value="Place order">
-            </form>
+            <a href="/orders/create">
+                <input type='submit' value="Confirm order">
+            </a>
         {{else}}
             <p>You must <a href="/user/login">log in</a> or <a href="/user/signup">create an account</a> to place your order.</p>
         {{end}}
