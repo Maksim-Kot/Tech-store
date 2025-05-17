@@ -201,7 +201,7 @@ func (h *Handler) UserLoginPost(w http.ResponseWriter, r *http.Request) {
 	if !form.Valid() {
 		data := h.newTemplateData(r)
 		data.Form = form
-		h.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+		h.render(w, http.StatusUnprocessableEntity, "login.html", data)
 		return
 	}
 
@@ -354,7 +354,11 @@ func (h *Handler) RemoveFromCart(w http.ResponseWriter, r *http.Request) {
 		h.SessionManager.Put(r.Context(), "flash", "Item not found in cart")
 	}
 
-	h.SessionManager.Put(r.Context(), "cart", cart)
+	if len(cart.Items) == 0 {
+		h.SessionManager.Remove(r.Context(), "cart")
+	} else {
+		h.SessionManager.Put(r.Context(), "cart", cart)
+	}
 
 	http.Redirect(w, r, "/cart", http.StatusSeeOther)
 }
@@ -443,4 +447,92 @@ func (h *Handler) OrdersByUser(w http.ResponseWriter, r *http.Request) {
 	data.Orders = orders
 
 	h.render(w, http.StatusOK, "orders.html", data)
+}
+
+func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
+	cartData := h.SessionManager.Get(r.Context(), "cart")
+	if cartData == nil {
+		h.SessionManager.Put(r.Context(), "flash", "Cart is empty")
+		http.Redirect(w, r, "/catalog", http.StatusSeeOther)
+		return
+	}
+
+	cart := cartData.(model.Cart)
+
+	id := h.SessionManager.GetInt64(r.Context(), "authenticatedUserID")
+	if id == 0 {
+		h.NotFound(w)
+		return
+	}
+
+	order := model.Order{}
+
+	for _, item := range cart.Items {
+		product, err := h.Ctrl.Catalog.ProductByID(r.Context(), item.ID)
+		if err != nil {
+			h.ServerError(w, err)
+			return
+		}
+
+		order.Products = append(order.Products, &model.Product{
+			ID:         product.ID,
+			Name:       product.Name,
+			Quantity:   item.Quantity,
+			Price:      product.Price,
+			TotalPrice: product.Price * float64(item.Quantity),
+		})
+
+		order.Price += product.Price * float64(item.Quantity)
+	}
+
+	user, err := h.Ctrl.User.Get(r.Context(), id)
+	if err != nil {
+		switch {
+		case errors.Is(err, controller.ErrNotFound):
+			h.NotFound(w)
+		default:
+			h.ServerError(w, err)
+		}
+		return
+	}
+
+	data := h.newTemplateData(r)
+	data.User = user
+	data.Order = &order
+
+	h.render(w, http.StatusOK, "purchase.html", data)
+}
+
+type OrderForm struct {
+	UserID            int64   `form:"user_id"`
+	Total             float64 `form:"total"`
+	ProductIDs        []int64 `form:"product_id"`
+	ProductQuantities []int32 `form:"product_quantity"`
+}
+
+func (h *Handler) CreateOrderPost(w http.ResponseWriter, r *http.Request) {
+	var form OrderForm
+
+	err := h.decodePostForm(r, &form)
+	if err != nil {
+		h.ServerError(w, err)
+		return
+	}
+
+	var items []*model.Item
+	for i := range form.ProductIDs {
+		items = append(items, &model.Item{
+			ID:       form.ProductIDs[i],
+			Quantity: form.ProductQuantities[i],
+		})
+	}
+
+	id, err := h.Ctrl.Orders.CreateOrder(r.Context(), form.UserID, form.Total, items)
+	if err != nil {
+		h.ServerError(w, err)
+	}
+
+	h.SessionManager.Remove(r.Context(), "cart")
+
+	http.Redirect(w, r, fmt.Sprintf("/account/order/%d", id), http.StatusSeeOther)
 }

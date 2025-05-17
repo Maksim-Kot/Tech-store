@@ -35,6 +35,10 @@ func (s *Server) routes() http.Handler {
 	router.Handle("GET /account/view", protected.ThenFunc(s.handler.AccountView))
 	router.Handle("GET /account/orders", protected.ThenFunc(s.handler.OrdersByUser))
 	router.Handle("GET /account/order/{id}", protected.ThenFunc(s.handler.Order))
+
+	router.Handle("GET /orders/create", dynamic.ThenFunc(s.handler.CreateOrder))
+	router.Handle("POST /orders/create", dynamic.ThenFunc(s.handler.CreateOrderPost))
+
 	router.Handle("POST /user/logout", protected.ThenFunc(s.handler.UserLogoutPost))
 
 	standard := alice.New(s.recoverPanic, logRequest, secureHeaders)
