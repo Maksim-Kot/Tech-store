@@ -358,3 +358,89 @@ func (h *Handler) RemoveFromCart(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/cart", http.StatusSeeOther)
 }
+
+func (h *Handler) Order(w http.ResponseWriter, r *http.Request) {
+	id, err := h.getID(r)
+	if err != nil || id < 1 {
+		h.NotFound(w)
+		return
+	}
+
+	purchase, err := h.Ctrl.Orders.OrderByID(r.Context(), id)
+	if err != nil {
+		switch {
+		case errors.Is(err, controller.ErrNotFound):
+			h.NotFound(w)
+		default:
+			h.ServerError(w, err)
+		}
+		return
+	}
+
+	userID := h.SessionManager.GetInt64(r.Context(), "authenticatedUserID")
+
+	if userID != purchase.UserID {
+		h.NotFound(w)
+		return
+	}
+
+	order := model.Order{
+		Status:    purchase.Status,
+		CreatedAt: purchase.CreatedAt,
+		Price:     purchase.Price,
+	}
+
+	for _, item := range purchase.Items {
+		product, err := h.Ctrl.Catalog.ProductByID(r.Context(), item.ItemID)
+		if err != nil {
+			h.ServerError(w, err)
+			return
+		}
+
+		order.Products = append(order.Products, &model.Product{
+			ID:       product.ID,
+			Name:     product.Name,
+			Quantity: item.Quantity,
+		})
+	}
+
+	data := h.newTemplateData(r)
+	data.Order = &order
+
+	h.render(w, http.StatusOK, "order.html", data)
+}
+
+func (h *Handler) OrdersByUser(w http.ResponseWriter, r *http.Request) {
+	id := h.SessionManager.GetInt64(r.Context(), "authenticatedUserID")
+	if id == 0 {
+		h.NotFound(w)
+		return
+	}
+
+	purchases, err := h.Ctrl.Orders.OrdersByUserID(r.Context(), id)
+	if err != nil {
+		switch {
+		case errors.Is(err, controller.ErrNotFound):
+			h.NotFound(w)
+		default:
+			h.ServerError(w, err)
+		}
+		return
+	}
+
+	var orders []*model.Order
+
+	for _, order := range purchases {
+		orders = append(orders, &model.Order{
+			ID:        order.ID,
+			Price:     order.Price,
+			Status:    order.Status,
+			CreatedAt: order.CreatedAt,
+		})
+	}
+
+	data := h.newTemplateData(r)
+	data.Orders = orders
+
+	h.render(w, http.StatusOK, "orders.html", data)
+}

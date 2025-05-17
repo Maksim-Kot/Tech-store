@@ -21,6 +21,8 @@ type templateData struct {
 	IsAuthenticated bool
 	User            *model.User
 	Cart            *model.Cart
+	Orders          []*model.Order
+	Order           *model.Order
 }
 
 func humanDate(t time.Time) string {
