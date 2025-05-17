@@ -1,0 +1,30 @@
+{{define "title"}}Orders{{end}}
+
+{{define "main"}}
+    <h2>Orders</h2>
+
+    {{if .Orders}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Price</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Orders}}
+                    <tr>
+                        <td>{{.Status}}</td>
+                        <td>{{humanDate .CreatedAt}}</td>
+                        <td>{{.Price}}</td>
+                        <td><a href="/account/order/{{.ID}}">See more</a></td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+    {{else}}
+        You have not ordered anything yet.
+    {{end}}
+{{end}}

@@ -1,0 +1,33 @@
+{{define "title"}}Order{{end}}
+
+{{define "main"}}
+    <h2>Order</h2>
+
+    {{with .Order}}
+        <p><strong>Status:</strong> {{.Status}}</p>
+        <p><strong>Created at:</strong> {{humanDate .CreatedAt}}</p>
+
+        <br>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Products}}
+                    <tr>
+                        <td><a href="/product/{{.ID}}">{{.Name}}</a></td>
+                        <td>{{.Quantity}}</td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        <br>
+
+        <p><strong>Price:</strong> {{printf "%.2f" .Price}} BYN</p>
+    {{end}}
+{{end}}
