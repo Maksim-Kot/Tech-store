@@ -7,11 +7,13 @@ import (
 	ordersmodel "github.com/Maksim-Kot/Tech-store-orders/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller"
 	"github.com/Maksim-Kot/Tech-store-web/internal/gateway"
+	"github.com/Maksim-Kot/Tech-store-web/internal/model"
 )
 
 type ordersGateway interface {
 	OrderByID(ctx context.Context, id int64) (*ordersmodel.Order, error)
 	OrdersByUserID(ctx context.Context, id int64) ([]*ordersmodel.Order, error)
+	CreateOrder(ctx context.Context, userID int64, price float64, items []*ordersmodel.Item) (int64, error)
 }
 
 type OrdersController struct {
@@ -46,4 +48,21 @@ func (c *OrdersController) OrdersByUserID(ctx context.Context, id int64) ([]*ord
 	}
 
 	return orders, nil
+}
+
+func (c *OrdersController) CreateOrder(ctx context.Context, userID int64, price float64, items []*model.Item) (int64, error) {
+	var ordersItems []*ordersmodel.Item
+	for _, item := range items {
+		ordersItems = append(ordersItems, &ordersmodel.Item{
+			ItemID:   item.ID,
+			Quantity: item.Quantity,
+		})
+	}
+
+	id, err := c.ordersGateway.CreateOrder(ctx, userID, price, ordersItems)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
