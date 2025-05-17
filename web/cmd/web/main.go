@@ -5,9 +5,11 @@ import (
 
 	"github.com/Maksim-Kot/Tech-store-web/config"
 	catalogcontroller "github.com/Maksim-Kot/Tech-store-web/internal/controller/catalog"
+	orderscontroller "github.com/Maksim-Kot/Tech-store-web/internal/controller/orders"
 	usercontroller "github.com/Maksim-Kot/Tech-store-web/internal/controller/user"
 	controller "github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
 	cataloggateway "github.com/Maksim-Kot/Tech-store-web/internal/gateway/catalog/http"
+	ordersgateway "github.com/Maksim-Kot/Tech-store-web/internal/gateway/orders/http"
 	httphandler "github.com/Maksim-Kot/Tech-store-web/internal/handler/http"
 	"github.com/Maksim-Kot/Tech-store-web/internal/repository/mysql"
 	httpserver "github.com/Maksim-Kot/Tech-store-web/internal/server/http"
@@ -21,6 +23,7 @@ func main() {
 	}
 
 	cataloggateway := cataloggateway.New("localhost:4001")
+	ordersgateway := ordersgateway.New("localhost:4002")
 
 	repo, err := mysql.New(cfg.Database)
 	if err != nil {
@@ -35,9 +38,10 @@ func main() {
 	}
 
 	catalogController := catalogcontroller.New(cataloggateway)
+	ordersController := orderscontroller.New(ordersgateway)
 	userController := usercontroller.New(repo)
 
-	ctrl := controller.New(catalogController, userController)
+	ctrl := controller.New(catalogController, ordersController, userController)
 
 	h, err := httphandler.New(ctrl, sessionManager)
 	if err != nil {
