@@ -1,0 +1,61 @@
+{{define "title"}}Purchase{{end}}
+
+{{define "main"}}
+    <h2>Purchase</h2>
+    {{with .User}}
+        <table>
+            <tr>
+                <th>Name</th>
+                <td>{{.Name}}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{.Email}}</td>
+            </tr>
+        </table>
+    {{end}}
+
+    <br>
+
+    {{with .Order}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Products}}
+                    <tr>
+                        <td><a href="/product/{{.ID}}">{{.Name}}</a></td>
+                        <td>{{.Quantity}}</td>
+                        <td>{{printf "%.2f" .Price}}</td>
+                        <td>{{.TotalPrice}}</td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        <br>
+
+        <p><strong>Total:</strong> {{printf "%.2f" .Price}} BYN</p>
+
+        <form method="post" action="/orders/create">
+            {{with $.User}}
+                <input type="hidden" name="user_id" value="{{.ID}}">
+            {{end}}
+
+            <input type="hidden" name="total" value="{{.Price}}">
+
+            {{range .Products}}
+                <input type="hidden" name="product_id" value="{{.ID}}">
+                <input type="hidden" name="product_quantity" value="{{.Quantity}}">
+            {{end}}
+
+            <input type='submit' value="Place order">
+        </form>
+    {{end}}
+{{end}}
