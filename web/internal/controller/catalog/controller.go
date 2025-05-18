@@ -13,6 +13,8 @@ type catalogGateway interface {
 	Catalog(ctx context.Context) ([]*model.Category, error)
 	ProductsByCategoryID(ctx context.Context, id int64) ([]*model.Product, error)
 	ProductByID(ctx context.Context, id int64) (*model.Product, error)
+	DecreaseProductQuantity(ctx context.Context, id int64, amount int32) error
+	IncreaseProductQuantity(ctx context.Context, id int64, amount int32) error
 }
 
 type CatalogController struct {
@@ -56,4 +58,36 @@ func (c *CatalogController) ProductByID(ctx context.Context, id int64) (*model.P
 	}
 
 	return product, nil
+}
+
+func (c *CatalogController) DecreaseProductQuantity(ctx context.Context, id int64, amount int32) error {
+	err := c.catalogGateway.DecreaseProductQuantity(ctx, id, amount)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, gateway.ErrNotFound):
+			return controller.ErrNotFound
+		case errors.Is(err, gateway.ErrNotEnough):
+			return controller.ErrNotEnough
+		case errors.Is(err, gateway.ErrEditConflict):
+			return controller.ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *CatalogController) IncreaseProductQuantity(ctx context.Context, id int64, amount int32) error {
+	err := c.catalogGateway.IncreaseProductQuantity(ctx, id, amount)
+
+	if err != nil {
+		if errors.Is(err, gateway.ErrNotFound) {
+			return controller.ErrNotFound
+		}
+		return err
+	}
+
+	return nil
 }
