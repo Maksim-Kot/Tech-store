@@ -11,6 +11,7 @@ import (
 	"github.com/Maksim-Kot/Tech-store-web/internal/controller/web"
 	"github.com/Maksim-Kot/Tech-store-web/internal/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/session"
+	"github.com/Maksim-Kot/Tech-store-web/internal/stocktx"
 	"github.com/Maksim-Kot/Tech-store-web/internal/validator"
 
 	"github.com/go-playground/form/v4"
@@ -519,17 +520,36 @@ func (h *Handler) CreateOrderPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var items []*model.Item
+	var orderItems []*model.Item
+	var txItems []stocktx.Item
 	for i := range form.ProductIDs {
-		items = append(items, &model.Item{
-			ID:       form.ProductIDs[i],
-			Quantity: form.ProductQuantities[i],
+		id := form.ProductIDs[i]
+		quantity := form.ProductQuantities[i]
+
+		orderItems = append(orderItems, &model.Item{
+			ID:       id,
+			Quantity: quantity,
+		})
+
+		txItems = append(txItems, stocktx.Item{
+			ProductID: id,
+			Amount:    quantity,
 		})
 	}
 
-	id, err := h.Ctrl.Orders.CreateOrder(r.Context(), form.UserID, form.Total, items)
+	txManager := stocktx.NewManager(h.Ctrl.Catalog)
+
+	reserved, err := txManager.TryReserve(r.Context(), txItems)
 	if err != nil {
 		h.ServerError(w, err)
+		return
+	}
+
+	id, err := h.Ctrl.Orders.CreateOrder(r.Context(), form.UserID, form.Total, orderItems)
+	if err != nil {
+		txManager.Rollback(r.Context(), reserved)
+		h.ServerError(w, err)
+		return
 	}
 
 	h.SessionManager.Remove(r.Context(), "cart")
