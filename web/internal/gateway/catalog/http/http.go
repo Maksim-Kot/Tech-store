@@ -16,6 +16,8 @@ const (
 	catalogURL            = baseURL + "/catalog"
 	productsByCategoryURL = baseURL + "/category/%d"
 	productURL            = baseURL + "/product/%d"
+	decreaseProductURL    = baseURL + "/product/%d/decrease/%d"
+	increaseProductURL    = baseURL + "/product/%d/increase/%d"
 )
 
 type Gateway struct {
@@ -127,4 +129,62 @@ func (g *Gateway) ProductByID(ctx context.Context, id int64) (*model.Product, er
 	}
 
 	return wrapper.Product, nil
+}
+
+func (g *Gateway) DecreaseProductQuantity(ctx context.Context, id int64, amount int32) error {
+	url := fmt.Sprintf(decreaseProductURL, g.addr, id, amount)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+	log.Printf("[gateway] POST %s (catalog service)", url)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		switch resp.StatusCode {
+		case http.StatusNotFound:
+			return gateway.ErrNotFound
+		case http.StatusBadRequest:
+			return gateway.ErrNotEnough
+		case http.StatusConflict:
+			return gateway.ErrEditConflict
+		default:
+			return fmt.Errorf("unexpected status: %s", resp.Status)
+		}
+	}
+
+	return nil
+}
+
+func (g *Gateway) IncreaseProductQuantity(ctx context.Context, id int64, amount int32) error {
+	url := fmt.Sprintf(increaseProductURL, g.addr, id, amount)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	if err != nil {
+		return err
+	}
+	log.Printf("[gateway] POST %s (catalog service)", url)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		switch resp.StatusCode {
+		case http.StatusNotFound:
+			return gateway.ErrNotFound
+		default:
+			return fmt.Errorf("unexpected status: %s", resp.Status)
+		}
+	}
+
+	return nil
 }
