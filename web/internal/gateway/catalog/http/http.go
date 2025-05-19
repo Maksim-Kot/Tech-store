@@ -7,11 +7,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Maksim-Kot/Commons/discovery"
+	"github.com/Maksim-Kot/Commons/httputil"
 	"github.com/Maksim-Kot/Tech-store-catalog/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/gateway"
 )
 
 const (
+	serviceName = "catalog"
+
 	baseURL               = "http://%s/v1"
 	catalogURL            = baseURL + "/catalog"
 	productsByCategoryURL = baseURL + "/category/%d"
@@ -21,11 +25,11 @@ const (
 )
 
 type Gateway struct {
-	addr string
+	registry discovery.Registry
 }
 
-func New(addr string) *Gateway {
-	return &Gateway{addr}
+func New(registry discovery.Registry) *Gateway {
+	return &Gateway{registry}
 }
 
 type categoriesResponse struct {
@@ -41,7 +45,11 @@ type productResponse struct {
 }
 
 func (g *Gateway) Catalog(ctx context.Context) ([]*model.Category, error) {
-	url := fmt.Sprintf(catalogURL, g.addr)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return nil, err
+	}
+	url := fmt.Sprintf(catalogURL, addr)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -68,7 +76,11 @@ func (g *Gateway) Catalog(ctx context.Context) ([]*model.Category, error) {
 }
 
 func (g *Gateway) ProductsByCategoryID(ctx context.Context, id int64) ([]*model.Product, error) {
-	url := fmt.Sprintf(productsByCategoryURL, g.addr, id)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return nil, err
+	}
+	url := fmt.Sprintf(productsByCategoryURL, addr, id)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -100,7 +112,11 @@ func (g *Gateway) ProductsByCategoryID(ctx context.Context, id int64) ([]*model.
 }
 
 func (g *Gateway) ProductByID(ctx context.Context, id int64) (*model.Product, error) {
-	url := fmt.Sprintf(productURL, g.addr, id)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return nil, err
+	}
+	url := fmt.Sprintf(productURL, addr, id)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -132,7 +148,11 @@ func (g *Gateway) ProductByID(ctx context.Context, id int64) (*model.Product, er
 }
 
 func (g *Gateway) DecreaseProductQuantity(ctx context.Context, id int64, amount int32) error {
-	url := fmt.Sprintf(decreaseProductURL, g.addr, id, amount)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return err
+	}
+	url := fmt.Sprintf(decreaseProductURL, addr, id, amount)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
@@ -163,7 +183,11 @@ func (g *Gateway) DecreaseProductQuantity(ctx context.Context, id int64, amount 
 }
 
 func (g *Gateway) IncreaseProductQuantity(ctx context.Context, id int64, amount int32) error {
-	url := fmt.Sprintf(increaseProductURL, g.addr, id, amount)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return err
+	}
+	url := fmt.Sprintf(increaseProductURL, addr, id, amount)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {

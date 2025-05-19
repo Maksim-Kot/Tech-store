@@ -8,11 +8,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Maksim-Kot/Commons/discovery"
+	"github.com/Maksim-Kot/Commons/httputil"
 	"github.com/Maksim-Kot/Tech-store-orders/pkg/model"
 	"github.com/Maksim-Kot/Tech-store-web/internal/gateway"
 )
 
 const (
+	serviceName = "orders"
+
 	baseURL          = "http://%s/v1"
 	createOrderURL   = baseURL + "/order"
 	orderByIdURL     = baseURL + "/order/%d"
@@ -20,11 +24,11 @@ const (
 )
 
 type Gateway struct {
-	addr string
+	registry discovery.Registry
 }
 
-func New(addr string) *Gateway {
-	return &Gateway{addr}
+func New(registry discovery.Registry) *Gateway {
+	return &Gateway{registry}
 }
 
 type orderResponse struct {
@@ -42,7 +46,11 @@ type createOrderResponse struct {
 }
 
 func (g *Gateway) OrderByID(ctx context.Context, id int64) (*model.Order, error) {
-	url := fmt.Sprintf(orderByIdURL, g.addr, id)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return nil, err
+	}
+	url := fmt.Sprintf(orderByIdURL, addr, id)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -74,7 +82,11 @@ func (g *Gateway) OrderByID(ctx context.Context, id int64) (*model.Order, error)
 }
 
 func (g *Gateway) OrdersByUserID(ctx context.Context, id int64) ([]*model.Order, error) {
-	url := fmt.Sprintf(orderByUserIdURL, g.addr, id)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return nil, err
+	}
+	url := fmt.Sprintf(orderByUserIdURL, addr, id)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -106,7 +118,11 @@ func (g *Gateway) OrdersByUserID(ctx context.Context, id int64) ([]*model.Order,
 }
 
 func (g *Gateway) CreateOrder(ctx context.Context, userID int64, price float64, items []*model.Item) (int64, error) {
-	url := fmt.Sprintf(createOrderURL, g.addr)
+	addr, err := httputil.ServiceAddr(ctx, serviceName, g.registry)
+	if err != nil {
+		return 0, err
+	}
+	url := fmt.Sprintf(createOrderURL, addr)
 
 	orderReq := struct {
 		UserID int64         `json:"user_id"`
