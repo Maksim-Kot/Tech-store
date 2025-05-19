@@ -11,17 +11,24 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Maksim-Kot/Commons/discovery"
 	"github.com/Maksim-Kot/Tech-store-catalog/config"
 	httphandler "github.com/Maksim-Kot/Tech-store-catalog/internal/handler/http"
 )
 
 type Server struct {
-	handler *httphandler.Handler
-	cfg     config.APIConfig
+	handler    *httphandler.Handler
+	cfg        config.APIConfig
+	registry   discovery.Registry
+	instanceID string
 }
 
-func New(h *httphandler.Handler, cfg config.APIConfig) *Server {
-	return &Server{h, cfg}
+func New(h *httphandler.Handler, cfg config.APIConfig, registry discovery.Registry) *Server {
+	return &Server{
+		handler:  h,
+		cfg:      cfg,
+		registry: registry,
+	}
 }
 
 func (s *Server) Serve() error {
@@ -31,6 +38,13 @@ func (s *Server) Serve() error {
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
+	}
+
+	ctx, mainCancel := context.WithCancel(context.Background())
+	defer mainCancel()
+
+	if err := s.registerService(ctx); err != nil {
+		return fmt.Errorf("failed to register service: %w", err)
 	}
 
 	shutdownError := make(chan error)
@@ -54,6 +68,9 @@ func (s *Server) Serve() error {
 
 		log.Println("[server] completing background tasks")
 
+		mainCancel()
+		s.deregisterService(ctx)
+
 		shutdownError <- nil
 	}()
 
@@ -72,4 +89,41 @@ func (s *Server) Serve() error {
 	log.Printf("[server] stoped catalog server on %s", srv.Addr)
 
 	return nil
+}
+
+func (s *Server) registerService(ctx context.Context) error {
+	s.instanceID = discovery.GenerateInstanceID(s.cfg.Name)
+	addr := fmt.Sprintf("localhost:%d", s.cfg.Port)
+
+	if err := s.registry.Register(ctx, s.instanceID, s.cfg.Name, addr); err != nil {
+		return err
+	}
+
+	go s.reportHealth(ctx)
+
+	return nil
+}
+
+func (s *Server) deregisterService(ctx context.Context) {
+	log.Println("[registry] deregistering service from Consul...")
+	if err := s.registry.Deregister(ctx, s.instanceID, s.cfg.Name); err != nil {
+		log.Println("[registry] failed to deregister from Consul:", err)
+	} else {
+		log.Println("[registry] successfully deregistered from Consul")
+	}
+}
+
+func (s *Server) reportHealth(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("[registry] stopping health reporting")
+			return
+		default:
+			if err := s.registry.ReportHealthyState(s.instanceID, s.cfg.Name); err != nil {
+				log.Println("[registry] failed to report healthy state:", err)
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}
 }
