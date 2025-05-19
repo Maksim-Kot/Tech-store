@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/Maksim-Kot/Commons/discovery/consul"
 	"github.com/Maksim-Kot/Tech-store-orders/config"
 	"github.com/Maksim-Kot/Tech-store-orders/internal/controller/orders"
 	httphandler "github.com/Maksim-Kot/Tech-store-orders/internal/handler/http"
@@ -12,6 +13,11 @@ import (
 
 func main() {
 	cfg, err := config.New("base.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	registry, err := consul.NewRegistry("localhost:8500")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,7 +32,7 @@ func main() {
 	ctrl := orders.New(repo)
 	h := httphandler.New(ctrl, cfg.Api)
 
-	srv := httpserver.New(h, cfg.Api)
+	srv := httpserver.New(h, cfg.Api, registry)
 	err = srv.Serve()
 	if err != nil {
 		log.Fatal(err)
