@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/Maksim-Kot/Commons/discovery/consul"
 	"github.com/Maksim-Kot/Tech-store-web/config"
 	catalogcontroller "github.com/Maksim-Kot/Tech-store-web/internal/controller/catalog"
 	orderscontroller "github.com/Maksim-Kot/Tech-store-web/internal/controller/orders"
@@ -22,8 +23,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cataloggateway := cataloggateway.New("localhost:4001")
-	ordersgateway := ordersgateway.New("localhost:4002")
+	registry, err := consul.NewRegistry("localhost:8500")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cataloggateway := cataloggateway.New(registry)
+	ordersgateway := ordersgateway.New(registry)
 
 	repo, err := mysql.New(cfg.Database)
 	if err != nil {
