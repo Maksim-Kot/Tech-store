@@ -150,12 +150,7 @@ func (r *Repository) OrdersByUserID(ctx context.Context, id int64) ([]*model.Ord
 
 	rows, err := r.DB.QueryContext(ctx, query, id)
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			return nil, repository.ErrNotFound
-		default:
-			return nil, err
-		}
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -179,6 +174,10 @@ func (r *Repository) OrdersByUserID(ctx context.Context, id int64) ([]*model.Ord
 
 	if err := rows.Err(); err != nil {
 		return nil, err
+	}
+
+	if len(orders) == 0 {
+		return nil, repository.ErrNotFound
 	}
 
 	for _, order := range orders {
